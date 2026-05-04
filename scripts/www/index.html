@@ -1,88 +1,225 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="./static/css/styles.css" />
-        <meta
-            http-equiv="Content-Security-Policy"
-            content="default-src * 'unsafe-inline' 'unsafe-eval'"
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Tauri App</title>
-        <script src="./static/js/main.js"></script>
-    </head>
-    <body>
-        <main class="container">
-            <h1>Welcome to TauriMan</h1>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>1672 · 残温序章</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-            <div class="row">
-                <a
-                    href="https://tauri.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <img
-                        src="./assets/tauri.svg"
-                        class="logo tauri"
-                        alt="Tauri logo"
-                    />
-                </a>
-                <a
-                    href="https://pakeplus.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <img
-                        src="https://hk.gh-proxy.org/https://github.com/Sjj1024/PakePlus/blob/main/app-icon.png"
-                        class="logo vanilla"
-                        alt="JavaScript logo"
-                    />
-                </a>
-            </div>
-            <p>Click to get data</p>
-            <form class="row" id="greet-form">
-                <input id="greet-input" placeholder="Enter a name..." />
-                <button type="submit" id="getdata">GET DATA</button>
-            </form>
-            <div class="functions">
-                <a href="./book.html" target="_self">跳转到book.html</a>
-                <a
-                    href="https://www.baidu.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >跳到百度blank
-                </a>
-                <a
-                    href="https://www.baidu.com"
-                    target="_self"
-                    rel="noopener noreferrer"
-                >
-                    跳到百度self
-                </a>
-                <button onclick="sayHello()">点击我</button>
-                <button onclick="sayHello()">下载文件</button>
-                <button onclick="sayHello()">上传文件</button>
-                <button onclick="sayHello()">访问相机</button>
-                <button onclick="sayHello()">访问麦克风</button>
-                <button onclick="sayHello()">访问相册</button>
-                <button class="btn" onclick="openWechat()">打开微信</button>
-                <button class="btn" onclick="openWechatScan()">
-                    打开扫一扫
-                </button>
-                <button class="btn" onclick="openZhihu()">打开知乎</button>
-                <button onclick="sayHello()">打开抖音</button>
-                <button onclick="sayHello()">用浏览器打开</button>
-                <button>打开知乎</button>
-            </div>
-            <p id="greet-msg"></p>
-            <img src="./static/image/cursor.jpeg" alt="logo" />
-            <video
-                src="https://hk.gh-proxy.org/https://github.com/Sjj1024/PakePlus/blob/main/docs/static/videos/pakeplus.mp4"
-                autoplay
-                controls
-                style="width: 100%; height: 100%"
-            ></video>
-            <audio src="./static/music/yin.mp3" controls></audio>
-        </main>
-    </body>
+        /* 纯白背景 — 衬托透明底的PNG图片 */
+        body {
+            background: #ffffff;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Courier New', monospace;
+        }
+
+        /* 全屏启动容器：白色背景 */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;   /* 纯白背景，透明底的图片会透出白色 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        /* 图片样式：全屏铺满，object-fit contain 保证完整显示不裁剪，透明区域透出白底 */
+        .splash-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;     /* 完整显示图片，不裁剪，透明部分透出白底 */
+            display: block;
+            /* 初始透明度0，慢慢显现 */
+            opacity: 0;
+            animation: imageReveal 1.2s ease-out forwards;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        /* 图片渐显动画 */
+        @keyframes imageReveal {
+            0% {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* 极简脚标（不影响主体，可选） */
+        .splash-credits {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #aaa;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            width: fit-content;
+            margin: 0 auto;
+            padding: 5px 16px;
+            border-radius: 30px;
+            font-family: monospace;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0;
+            animation: fadeInText 0.8s ease-out 0.6s forwards;
+        }
+
+        @keyframes fadeInText {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 0.6; transform: translateY(0); }
+        }
+
+        /* 可选轻触跳过层 */
+        .skip-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 30;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<div class="splash-screen" id="splashScreen">
+    <!-- 透明底PNG，白色背景衬托，全屏显示 -->
+    <img class="splash-image" id="splashImg" alt="1672 残温论坛" src="background.png" onerror="handleFallback()">
+    <div class="splash-credits">✦ 残温墟境 · 即将启幕 ✦</div>
+    <div class="skip-overlay" id="skipOverlay"></div>
+</div>
+
+<script>
+    (function() {
+        // 需求：背景全白（衬托透明底图），图片慢慢显示，等待2秒后跳转 forum.html
+        const splashContainer = document.getElementById('splashScreen');
+        const splashImage = document.getElementById('splashImg');
+        let hasRedirected = false;
+        let redirectTimer = null;
+
+        function redirectToForum() {
+            if (hasRedirected) return;
+            hasRedirected = true;
+            if (redirectTimer) clearTimeout(redirectTimer);
+            // 快速淡出，更平滑
+            splashContainer.style.transition = 'opacity 0.25s ease';
+            splashContainer.style.opacity = '0';
+            setTimeout(() => {
+                window.location.href = 'forum.html';
+            }, 250);
+        }
+
+        function startTwoSecondsCountdown() {
+            if (hasRedirected) return;
+            if (redirectTimer) clearTimeout(redirectTimer);
+            redirectTimer = setTimeout(() => {
+                if (!hasRedirected) redirectToForum();
+            }, 2000);
+        }
+
+        function handleFallback() {
+            console.warn('图片加载失败，仍会在2秒后跳转');
+            if (!hasRedirected) startTwoSecondsCountdown();
+        }
+
+        // 图片加载完成 + 动画可见后，开始2秒倒计时
+        let imageReady = false;
+        let animationCompleted = false;
+        let countdownStarted = false;
+
+        function tryStartCountdown() {
+            if (countdownStarted) return;
+            if (imageReady && animationCompleted) {
+                countdownStarted = true;
+                if (redirectTimer) clearTimeout(redirectTimer);
+                redirectTimer = setTimeout(() => {
+                    if (!hasRedirected) redirectToForum();
+                }, 2000);
+            }
+        }
+
+        function onAnimationFinish() {
+            if (animationCompleted) return;
+            animationCompleted = true;
+            tryStartCountdown();
+        }
+
+        // 监听动画结束
+        if (splashImage) {
+            splashImage.addEventListener('animationend', onAnimationFinish, { once: true });
+            // 保险：1.2秒后动画未触发则手动标记
+            setTimeout(() => {
+                if (!animationCompleted) {
+                    animationCompleted = true;
+                    tryStartCountdown();
+                }
+            }, 1500);
+        } else {
+            animationCompleted = true;
+        }
+
+        // 监听图片加载
+        if (splashImage.complete && splashImage.naturalWidth !== 0) {
+            imageReady = true;
+            tryStartCountdown();
+        } else {
+            splashImage.addEventListener('load', () => {
+                imageReady = true;
+                tryStartCountdown();
+            });
+            splashImage.addEventListener('error', () => {
+                imageReady = true;
+                tryStartCountdown();
+            });
+        }
+
+        // 全局兜底：3.5秒强制跳转
+        setTimeout(() => {
+            if (!hasRedirected) redirectToForum();
+        }, 3800);
+
+        // 点击跳过（不破坏自动逻辑）
+        const skipLayer = document.getElementById('skipOverlay');
+        if (skipLayer) {
+            skipLayer.addEventListener('click', () => {
+                if (!hasRedirected) redirectToForum();
+            });
+        }
+
+        // 页面恢复时处理
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted && !hasRedirected) {
+                if (redirectTimer) clearTimeout(redirectTimer);
+                redirectToForum();
+            }
+        });
+    })();
+</script>
+</body>
 </html>
